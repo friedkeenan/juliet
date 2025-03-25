@@ -57,19 +57,19 @@ namespace juliet {
             juliet::screen_region auto &&region,
             const juliet::iterative_set auto &set
         ) {
-            const auto num_tasks = static_cast<std::size_t>(self._threads.get_thread_count());
+            const auto num_tasks = self._threads.get_thread_count();
 
             const auto pixels_per_thread = std::ranges::size(region) / (num_tasks + 1);
 
             auto it = std::ranges::begin(region);
-            for (const auto _ : std::views::iota(0uz, num_tasks)) {
+            for (auto _ : std::views::iota(0uz, num_tasks)) {
                 self._threads.detach_task([&renderer, &set, it, pixels_per_thread] {
                     for (const juliet::coords coords : std::views::counted(it, pixels_per_thread)) {
                         renderer.render_by_iteration_at(coords, set);
                     }
                 });
 
-                std::advance(it, pixels_per_thread);
+                std::ranges::advance(it, pixels_per_thread);
             }
 
             for (const juliet::coords coords : std::ranges::subrange(it, std::ranges::end(region))) {
